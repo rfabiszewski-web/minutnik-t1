@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minutnik T1</title>
+<meta name="description" content="Minutnik interwałowy: Tabata, HIIT, EMOM, boks i biegi.">
+<meta name="theme-color" content="#0B2D5B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Minutnik">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: zegar po lewej, ustawienia po prawej; na telefonie jedno pod drugim.
+   Paleta 1:1 z T1 – wygląd A „Granat i cyjan”; niżej aliasy używane przez minutnik. */
+:root {
+  --bg: #F3F6F9;
+  --card: #FFFFFF;
+  --ink: #0B1B33;
+  --muted: #566577;
+  --line: #DDE5ED;
+  --sunk: #EEF2F6;
+  --accent: #0B2D5B;
+  --on-accent: #FFFFFF;
+  --brand: #12B5CC;
+  --accent-text: #00718A;
+  --hero-btn: #2BD3E6;
+  --logo: #F26B3A;
+  --prep: #F5C26B;
+  --work: #EE8F5A;
+  --rest: #8FC1E3;
+  --set-rest: #C7DDF2;
+  --cooldown: #A3ADB8;
+  --hard: #D9534F;
+  --font: "Barlow", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --radius: 16px;
+
+  /* aliasy minutnika */
+  --surface: var(--card);
+  --fg: var(--ink);
+  --navy: var(--accent);
+  --teal: var(--accent-text);
+  --track: var(--sunk);
+  --sets: var(--set-rest);
+  --done: var(--cooldown);
+  --on-phase: #0B1B33;
+  --on-logo: #FFFFFF;
+  --f-display: var(--display);
+  --f-body: var(--font);
+  --f-mono: var(--font);
+  --phase: var(--prep);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #06121F; --card: #0D1F33; --ink: #E6EEF5; --muted: #93A6B9; --line: #1B3350; --sunk: #132A44;
+  --accent: #2BD3E6; --on-accent: #04202A; --brand: #2BD3E6; --accent-text: #5BE0EE; --hero-btn: #2BD3E6;
+  --prep: #F2B94E; --work: #EE8F5A; --rest: #6FA8D6; --set-rest: #9DBCDB; --cooldown: #8593A8; --hard: #E0605C;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #06121F; --card: #0D1F33; --ink: #E6EEF5; --muted: #93A6B9; --line: #1B3350; --sunk: #132A44;
+  --accent: #2BD3E6; --on-accent: #04202A; --brand: #2BD3E6; --accent-text: #5BE0EE; --hero-btn: #2BD3E6;
+  --prep: #F2B94E; --work: #EE8F5A; --rest: #6FA8D6; --set-rest: #9DBCDB; --cooldown: #8593A8; --hard: #E0605C;
+  color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  margin: 0; min-height: 100vh;
+  -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+}
+button { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 820px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+header.top { max-width: 1080px; margin: 0 auto 16px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 34px; margin: 0; text-wrap: balance; line-height: 1.05; }
+.sub { font-size: 15px; color: var(--muted); }
+.total { font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Zegar */
+.clock { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.phase-label { font-family: var(--f-display); font-weight: 700; font-size: 24px; letter-spacing: .04em; background: var(--phase); color: var(--on-phase); padding: 6px 22px; border-radius: 14px; transition: background .3s; }
+.ring-box { position: relative; width: min(100%, 380px); aspect-ratio: 1; max-width: 100%; }
+.ring-box svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.ring-track { fill: none; stroke: var(--track); stroke-width: 14; }
+.ring-prog { fill: none; stroke: var(--phase); stroke-width: 14; stroke-linecap: round; transition: stroke .3s; }
+/* ostatnie 3 sekundy fazy: kolor Z5 */
+.final .ring-prog { stroke: var(--hard); }
+.final .time { color: var(--hard); }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.time { font-family: var(--f-display); font-weight: 700; font-size: clamp(72px, 22vw, 132px); line-height: .9; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+.next { font-size: 13px; color: var(--muted); text-align: center; padding-inline: 20%; }
+.next b { color: var(--fg); font-weight: 600; }
+
+.counters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.counter { border-top: 2px solid var(--line); padding-top: 6px; }
+.counter .k { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.counter .v { font-family: var(--f-display); font-weight: 700; font-size: 28px; font-variant-numeric: tabular-nums; }
+
+.timeline { display: flex; width: 100%; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px; background: var(--bg); }
+.timeline span { display: block; height: 100%; opacity: .35; }
+.timeline span.past { opacity: .12; }
+.timeline span.cur { opacity: 1; }
+
+.controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+button { font: inherit; cursor: pointer; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--teal); padding: 10px 16px; font-weight: 600; }
+button:hover { border-color: var(--teal); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.btn-main { background: var(--logo); color: var(--on-logo); border-color: var(--logo); font-family: var(--f-display); font-weight: 700; font-size: 24px; letter-spacing: .04em; padding: 10px 36px; min-width: 170px; }
+.btn-main:hover { border-color: var(--logo); filter: brightness(1.05); }
+.running .btn-main { background: var(--navy); border-color: var(--navy); color: var(--on-accent); }
+.hint { font-size: 12px; color: var(--muted); text-align: center; }
+kbd { font-family: var(--f-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+
+/* Ustawienia */
+.panel { display: flex; flex-direction: column; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+h2 { font-size: 15px; color: var(--muted); margin: 0 0 12px; font-weight: 500; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.presets button { padding: 8px 12px; font-size: 14px; text-align: left; color: var(--fg); }
+.presets button small { display: block; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.presets button[aria-pressed="true"] { border-color: var(--teal); background: var(--bg); }
+.presets button[aria-pressed="true"] small { color: var(--teal); }
+
+.fields { display: grid; gap: 10px; }
+.field { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.dot { width: 12px; height: 12px; border-radius: 4px; }
+.field label { font-weight: 500; }
+.field label small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.stepper { display: flex; align-items: center; border: 2px solid var(--line); border-radius: 14px; overflow: hidden; }
+.stepper button { border: 0; border-radius: 0; padding: 8px 12px; background: transparent; font-family: var(--f-mono); }
+.stepper input { width: 64px; border: 0; background: transparent; color: var(--fg); text-align: center; font-family: var(--f-mono); font-size: 15px; font-variant-numeric: tabular-nums; padding: 8px 0; -moz-appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.toggles { display: grid; gap: 8px; }
+.toggles label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.toggles input { width: 18px; height: 18px; accent-color: var(--teal); }
+
+.running .panel .card.settings { opacity: .55; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div><h1>Minutnik</h1><div class="sub">T1 · trening interwałowy</div></div>
+  <div class="total" id="total">Całość: 0:00</div>
+</header>
+
+<main class="wrap" id="app">
+  <section class="clock" aria-live="polite">
+    <div class="phase-label" id="phaseLabel">Gotowy</div>
+    <div class="ring-box">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="ring-track" cx="100" cy="100" r="90"></circle>
+        <circle class="ring-prog" id="ring" cx="100" cy="100" r="90"></circle>
+      </svg>
+      <div class="ring-center">
+        <div class="time" id="time">0:00</div>
+        <div class="next" id="next"></div>
+      </div>
+    </div>
+    <div class="counters">
+      <div class="counter"><div class="k">Runda</div><div class="v" id="cRound">–</div></div>
+      <div class="counter"><div class="k">Seria</div><div class="v" id="cSet">–</div></div>
+      <div class="counter"><div class="k">Pozostało</div><div class="v" id="cLeft">–</div></div>
+    </div>
+    <div class="timeline" id="timeline" aria-hidden="true"></div>
+    <div class="controls">
+      <button id="btnPrev" type="button" title="Poprzedni odcinek">◀◀</button>
+      <button id="btnMain" class="btn-main" type="button">Start</button>
+      <button id="btnNext" type="button" title="Następny odcinek">▶▶</button>
+      <button id="btnReset" type="button">Reset</button>
+    </div>
+    <div class="hint"><kbd>Spacja</kbd> start/pauza · <kbd>←</kbd> <kbd>→</kbd> odcinki · <kbd>R</kbd> reset</div>
+  </section>
+
+  <aside class="panel">
+    <div class="card">
+      <h2>Gotowe schematy</h2>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div class="card settings">
+      <h2>Ustawienia</h2>
+      <div class="fields" id="fields"></div>
+    </div>
+    <div class="card">
+      <h2>Sygnały</h2>
+      <div class="toggles">
+        <label><input type="checkbox" id="optSound" checked> Dźwięk (piknięcia na 3, 2, 1)</label>
+        <label><input type="checkbox" id="optVoice"> Komunikaty głosowe</label>
+        <label><input type="checkbox" id="optWake" checked> Nie wygaszaj ekranu podczas treningu</label>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(function () {
+  const FIELDS = [
+    { id: 'prep',     label: 'Przygotowanie', sub: 'przed startem', unit: 's', min: 0, max: 600, step: 5, color: '--prep' },
+    { id: 'work',     label: 'Praca',         sub: 'czas wysiłku',  unit: 's', min: 5, max: 3600, step: 5, color: '--work' },
+    { id: 'rest',     label: 'Odpoczynek',    sub: 'między rundami', unit: 's', min: 0, max: 3600, step: 5, color: '--rest' },
+    { id: 'rounds',   label: 'Rundy',         sub: 'w jednej serii', unit: '×', min: 1, max: 99, step: 1, color: '--navy' },
+    { id: 'sets',     label: 'Serie',         sub: 'powtórzenia bloku', unit: '×', min: 1, max: 20, step: 1, color: '--navy' },
+    { id: 'setRest',  label: 'Przerwa między seriami', sub: 'dłuższy odpoczynek', unit: 's', min: 0, max: 1800, step: 15, color: '--sets' },
+    { id: 'cooldown', label: 'Wyciszenie',    sub: 'na koniec',      unit: 's', min: 0, max: 1800, step: 15, color: '--done' }
+  ];
+  const PRESETS = [
+    { id: 'tabata', name: 'Tabata', cfg: { prep: 10, work: 20, rest: 10, rounds: 8, sets: 1, setRest: 60, cooldown: 0 } },
+    { id: 'hiit', name: 'HIIT 40/20', cfg: { prep: 10, work: 40, rest: 20, rounds: 8, sets: 3, setRest: 90, cooldown: 120 } },
+    { id: 'emom', name: 'EMOM 10', cfg: { prep: 10, work: 60, rest: 0, rounds: 10, sets: 1, setRest: 0, cooldown: 0 } },
+    { id: 'boks', name: 'Boks 3×3', cfg: { prep: 15, work: 180, rest: 60, rounds: 3, sets: 1, setRest: 0, cooldown: 0 } },
+    { id: 'bieg', name: 'Bieg 1/1', cfg: { prep: 300, work: 60, rest: 60, rounds: 10, sets: 1, setRest: 0, cooldown: 300 } }
+  ];
+  const PHASE = {
+    prep: { name: 'Przygotuj się', color: '--prep', say: 'Przygotuj się' },
+    work: { name: 'Praca', color: '--work', say: 'Start' },
+    rest: { name: 'Odpoczynek', color: '--rest', say: 'Odpoczynek' },
+    setRest: { name: 'Przerwa', color: '--sets', say: 'Przerwa między seriami' },
+    cooldown: { name: 'Wyciszenie', color: '--done', say: 'Wyciszenie' }
+  };
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+
+  let cfg = Object.assign({}, PRESETS[1].cfg, store.get('it.cfg', {}));
+  let segs = [], idx = 0, remainingMs = 0, running = false, lastTs = 0, raf = 0, finished = false, lastBeepSec = -1;
+  let audio = null, wakeLock = null;
+
+  const $ = id => document.getElementById(id);
+  const RING_LEN = 2 * Math.PI * 90;
+  $('ring').style.strokeDasharray = RING_LEN;
+
+  function fmt(sec) {
+    sec = Math.max(0, Math.ceil(sec));
+    const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0');
+  }
+  const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  function build() {
+    const out = [];
+    if (cfg.prep > 0) out.push({ type: 'prep', dur: cfg.prep });
+    for (let s = 1; s <= cfg.sets; s++) {
+      for (let r = 1; r <= cfg.rounds; r++) {
+        out.push({ type: 'work', dur: cfg.work, round: r, set: s });
+        const lastRound = r === cfg.rounds;
+        if (!lastRound && cfg.rest > 0) out.push({ type: 'rest', dur: cfg.rest, round: r, set: s });
+      }
+      if (s < cfg.sets && cfg.setRest > 0) out.push({ type: 'setRest', dur: cfg.setRest, set: s });
+      else if (s < cfg.sets && cfg.rest > 0) out.push({ type: 'rest', dur: cfg.rest, round: cfg.rounds, set: s });
+    }
+    if (cfg.cooldown > 0) out.push({ type: 'cooldown', dur: cfg.cooldown });
+    return out;
+  }
+
+  function reset() {
+    stop();
+    segs = build(); idx = 0; finished = false;
+    remainingMs = segs[0].dur * 1000; lastBeepSec = -1;
+    $('total').textContent = 'Całość: ' + fmt(segs.reduce((a, s) => a + s.dur, 0)) + ' · ' + segs.filter(s => s.type === 'work').length + ' × praca';
+    drawTimeline(); render();
+  }
+
+  function drawTimeline() {
+    const tl = $('timeline'); tl.innerHTML = '';
+    segs.forEach((s, i) => {
+      const el = document.createElement('span');
+      el.style.flex = s.dur + ' 0 0';
+      el.style.background = 'var(' + PHASE[s.type].color + ')';
+      el.dataset.i = i;
+      tl.appendChild(el);
+    });
+  }
+
+  function render() {
+    const seg = segs[idx];
+    const ph = PHASE[seg.type];
+    document.documentElement.style.setProperty('--phase', 'var(' + (finished ? '--rest' : ph.color) + ')');
+    $('phaseLabel').textContent = finished ? 'Koniec treningu' : (!running && remainingMs === seg.dur * 1000 && idx === 0 ? 'Gotowy' : ph.name) + (!running && !finished && !(remainingMs === seg.dur * 1000 && idx === 0) ? ' · pauza' : '');
+    $('time').textContent = finished ? '0:00' : fmt(remainingMs / 1000);
+    const frac = finished ? 0 : remainingMs / (seg.dur * 1000);
+    $('ring').style.strokeDashoffset = RING_LEN * (1 - frac);
+
+    const curRound = seg.round || (segs.slice(0, idx + 1).reverse().find(s => s.round) || {}).round;
+    const curSet = seg.set || (segs.slice(0, idx + 1).reverse().find(s => s.set) || {}).set;
+    $('cRound').textContent = curRound ? curRound + '/' + cfg.rounds : '–';
+    $('cSet').textContent = curSet ? curSet + '/' + cfg.sets : '–';
+    let left = remainingMs / 1000;
+    for (let i = idx + 1; i < segs.length; i++) left += segs[i].dur;
+    $('cLeft').textContent = finished ? '0:00' : fmt(left);
+
+    const nxt = segs[idx + 1];
+    $('next').innerHTML = finished ? 'Dobra robota.' : nxt ? 'Dalej: <b>' + PHASE[nxt.type].name + '</b> ' + fmt(nxt.dur) : 'Ostatni odcinek';
+
+    [...$('timeline').children].forEach((el, i) => {
+      el.className = finished || i < idx ? 'past' : i === idx ? 'cur' : '';
+    });
+    $('btnMain').textContent = running ? 'Pauza' : finished ? 'Od nowa' : (idx === 0 && remainingMs === seg.dur * 1000 ? 'Start' : 'Wznów');
+    document.body.classList.toggle('running', running);
+    document.querySelector('.clock').classList.toggle('final', running && !finished && remainingMs <= 3000);
+  }
+
+  /* Dźwięk */
+  function ensureAudio() {
+    if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (audio && audio.state === 'suspended') audio.resume();
+  }
+  function beep(freq, ms, vol) {
+    if (!$('optSound').checked || !audio) return;
+    const o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime;
+    o.type = 'square'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.15, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
+    o.connect(g).connect(audio.destination); o.start(t); o.stop(t + ms / 1000 + 0.02);
+  }
+  function say(text) {
+    if (!$('optVoice').checked || !window.speechSynthesis) return;
+    try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'pl-PL'; speechSynthesis.speak(u); } catch (e) {}
+  }
+
+  async function lockScreen() {
+    if (!$('optWake').checked || !navigator.wakeLock || wakeLock) return;
+    try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } catch (e) {}
+  }
+  function unlockScreen() { if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; } }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && running) lockScreen(); });
+
+  function enterSegment(i) {
+    idx = i; remainingMs = segs[i].dur * 1000; lastBeepSec = -1;
+    const t = segs[i].type;
+    beep(t === 'work' ? 1320 : 660, 450, 0.2);
+    say(t === 'work' && segs[i].round ? 'Runda ' + segs[i].round : PHASE[t].say);
+  }
+
+  function tick(ts) {
+    if (!running) return;
+    const dt = ts - lastTs; lastTs = ts;
+    remainingMs -= dt;
+    while (remainingMs <= 0) {
+      if (idx + 1 >= segs.length) { finish(); return; }
+      const carry = remainingMs;
+      enterSegment(idx + 1);
+      remainingMs += carry;
+    }
+    const sec = Math.ceil(remainingMs / 1000);
+    if (sec <= 3 && sec >= 1 && sec !== lastBeepSec) { lastBeepSec = sec; beep(880, 120); }
+    render();
+    raf = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    ensureAudio();
+    if (finished) reset();
+    running = true; lastTs = performance.now();
+    if (idx === 0 && remainingMs === segs[0].dur * 1000) { beep(segs[0].type === 'work' ? 1320 : 660, 450, 0.2); say(PHASE[segs[0].type].say); }
+    lockScreen();
+    raf = requestAnimationFrame(tick); render();
+  }
+  function stop() { running = false; cancelAnimationFrame(raf); unlockScreen(); }
+  function finish() {
+    stop(); finished = true; idx = segs.length - 1; remainingMs = 0;
+    beep(1320, 200); setTimeout(() => beep(1320, 200), 260); setTimeout(() => beep(1760, 600, 0.2), 520);
+    say('Koniec treningu'); render();
+  }
+  function jump(d) {
+    if (finished && d < 0) { finished = false; idx = segs.length - 1; remainingMs = segs[idx].dur * 1000; render(); return; }
+    const elapsed = segs[idx].dur * 1000 - remainingMs;
+    let n = idx + d;
+    if (d < 0 && elapsed > 2000) n = idx;
+    if (n < 0) n = 0;
+    if (n >= segs.length) { finish(); return; }
+    finished = false; idx = n; remainingMs = segs[n].dur * 1000; lastBeepSec = -1;
+    if (running) { ensureAudio(); beep(segs[n].type === 'work' ? 1320 : 660, 300, 0.15); }
+    render();
+  }
+
+  /* UI ustawień */
+  function buildFields() {
+    const box = $('fields');
+    FIELDS.forEach(f => {
+      const row = document.createElement('div'); row.className = 'field';
+      row.innerHTML =
+        '<span class="dot" style="background:var(' + f.color + ')"></span>' +
+        '<label for="f-' + f.id + '">' + f.label + '<small>' + f.sub + (f.unit === 's' ? ' · sekundy' : '') + '</small></label>' +
+        '<div class="stepper"><button type="button" aria-label="Mniej">−</button>' +
+        '<input id="f-' + f.id + '" type="number" inputmode="numeric" min="' + f.min + '" max="' + f.max + '" step="1">' +
+        '<button type="button" aria-label="Więcej">+</button></div>';
+      const [minus, plus] = row.querySelectorAll('button');
+      const inp = row.querySelector('input');
+      inp.value = cfg[f.id];
+      const setVal = v => {
+        v = Math.round(Number(v)); if (!isFinite(v)) v = cfg[f.id];
+        v = Math.min(f.max, Math.max(f.min, v));
+        inp.value = v; if (cfg[f.id] !== v) { cfg[f.id] = v; changed(); }
+      };
+      minus.onclick = () => setVal(cfg[f.id] - f.step);
+      plus.onclick = () => setVal(cfg[f.id] + f.step);
+      inp.onchange = () => setVal(inp.value);
+      box.appendChild(row);
+    });
+  }
+  function syncFields() { FIELDS.forEach(f => { $('f-' + f.id).value = cfg[f.id]; }); }
+
+  function buildPresets() {
+    const box = $('presets');
+    PRESETS.forEach(p => {
+      const b = document.createElement('button'); b.type = 'button';
+      b.innerHTML = p.name + '<small>' + p.cfg.work + '/' + p.cfg.rest + ' × ' + p.cfg.rounds + (p.cfg.sets > 1 ? ' × ' + p.cfg.sets : '') + '</small>';
+      b.onclick = () => { cfg = Object.assign({}, p.cfg); syncFields(); changed(); };
+      b._cfg = p.cfg;
+      box.appendChild(b);
+    });
+  }
+  function markPreset() {
+    [...$('presets').children].forEach(b => {
+      b.setAttribute('aria-pressed', String(Object.keys(b._cfg).every(k => b._cfg[k] === cfg[k])));
+    });
+  }
+  function changed() { store.set('it.cfg', cfg); markPreset(); reset(); }
+
+  ['optSound', 'optVoice', 'optWake'].forEach(id => {
+    const v = store.get('it.' + id, null);
+    if (v !== null) $(id).checked = v;
+    $(id).onchange = () => { store.set('it.' + id, $(id).checked); if (id === 'optWake') { $(id).checked && running ? lockScreen() : unlockScreen(); } };
+  });
+
+  $('btnMain').onclick = () => running ? (stop(), render()) : start();
+  $('btnReset').onclick = reset;
+  $('btnPrev').onclick = () => jump(-1);
+  $('btnNext').onclick = () => jump(1);
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
+    if (e.code === 'Space') { e.preventDefault(); $('btnMain').click(); }
+    else if (e.key === 'ArrowRight') jump(1);
+    else if (e.key === 'ArrowLeft') jump(-1);
+    else if (e.key === 'r' || e.key === 'R') reset();
+  });
+
+  /* Link z aplikacji: ...#tabata, #hiit, #emom, #boks, #bieg wybiera schemat */
+  function fromHash() {
+    const p = PRESETS.find(p => '#' + p.id === location.hash.toLowerCase());
+    if (!p) return false;
+    cfg = Object.assign({}, p.cfg); store.set('it.cfg', cfg);
+    return true;
+  }
+  window.addEventListener('hashchange', () => { if (fromHash()) { syncFields(); markPreset(); reset(); } });
+
+  /* Trening z planu T1: ?work=45&rest=15&rounds=6&sets=2 (brakujące pola zostają z bieżących ustawień) */
+  /* Rozpiska z T1, np. "tabata", "EMOM 12", "8x 40/20", "6 x 3min/1min, 2 serie" */
+  function parsePlan(text) {
+    const t = String(text).toLowerCase().replace(/,/g, ' ');
+    if (/tabata/.test(t)) return Object.assign({}, PRESETS[0].cfg);
+    let m = t.match(/emom\s*(\d+)/);
+    if (m) return { work: 60, rest: 0, rounds: +m[1], sets: 1 };
+    const sec = (n, u) => Math.round(parseFloat(n) * (/^(m|min|')/.test(u || '') ? 60 : 1));
+    m = t.match(/(\d+)\s*[x×]\s*(\d+(?:\.\d+)?)\s*(min|m|'|s|sek)?\s*\/\s*(\d+(?:\.\d+)?)\s*(min|m|'|s|sek)?/);
+    if (!m) return null;
+    const out = { rounds: +m[1], work: sec(m[2], m[3]), rest: sec(m[4], m[5] || m[3]) };
+    const s = t.match(/(\d+)\s*(seri|set)/);
+    out.sets = s ? +s[1] : 1;
+    return out;
+  }
+
+  function fromQuery() {
+    const q = new URLSearchParams(location.search);
+    const p = q.get('preset') && PRESETS.find(p => p.id === q.get('preset').toLowerCase());
+    let hit = false;
+    if (p) { cfg = Object.assign({}, p.cfg); hit = true; }
+    const parsed = q.get('plan') && parsePlan(q.get('plan'));
+    if (parsed) { Object.assign(cfg, parsed); hit = true; }
+    if (q.get('title')) document.querySelector('.sub').textContent = q.get('title');
+    FIELDS.forEach(f => {
+      if (!q.has(f.id)) return;
+      const v = Math.round(Number(q.get(f.id)));
+      if (isFinite(v)) { cfg[f.id] = Math.min(f.max, Math.max(f.min, v)); hit = true; }
+    });
+    if (hit) store.set('it.cfg', cfg);
+  }
+
+  fromQuery(); fromHash(); buildFields(); buildPresets(); markPreset(); reset();
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+</body>
+</html>

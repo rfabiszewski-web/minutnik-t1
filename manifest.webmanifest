@@ -1,0 +1,24 @@
+{
+  "name": "Minutnik T1",
+  "short_name": "Minutnik",
+  "description": "Minutnik interwałowy: Tabata, HIIT, EMOM, boks i biegi.",
+  "lang": "pl",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F6F9",
+  "theme_color": "#0B2D5B",
+  "categories": ["fitness", "sports", "health"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Tabata", "url": "./?preset=tabata", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "HIIT 40/20", "url": "./?preset=hiit", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "EMOM 10", "url": "./?preset=emom", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
